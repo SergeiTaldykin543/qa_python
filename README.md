@@ -1,4 +1,4 @@
-# qa_python
+# qa_python 
 # Тесты для метода add_new_book
 - test_add_new_book_adds_one_book - проверяет добавление одной книги
 - test_add_new_book_adds_multiple_books - проверяет добавление нескольких книг
