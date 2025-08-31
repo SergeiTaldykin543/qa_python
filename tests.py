@@ -51,9 +51,14 @@ class TestBooksCollector:
         empty_collector.set_book_genre('Несуществующая книга', 'Фантастика')
         assert 'Несуществующая книга' not in empty_collector.books_genre
 
-    def test_get_book_genre_returns_correct_genre(self, collector_with_data):
-        genre = collector_with_data.get_book_genre('Гордость и предубеждение и зомби')
-        assert genre == 'Фантастика'
+    def test_get_book_genre_returns_correct_genre(self, empty_collector):
+        empty_collector.books_genre = {
+            'Тестовая книга 1': 'Фантастика',
+            'Тестовая книга 2': 'Ужасы',
+            'Тестовая книга 3': ''}
+        assert empty_collector.get_book_genre('Тестовая книга 1') == empty_collector.books_genre['Тестовая книга 1']
+        assert empty_collector.get_book_genre('Тестовая книга 2') == empty_collector.books_genre['Тестовая книга 2']
+        assert empty_collector.get_book_genre('Тестовая книга 3') == empty_collector.books_genre['Тестовая книга 3']
 
     def test_get_book_genre_returns_empty_for_no_genre(self, collector_with_data):
         genre = collector_with_data.get_book_genre('Книга без жанра')
@@ -67,9 +72,18 @@ class TestBooksCollector:
         books = collector_with_data.get_books_with_specific_genre('Фантастика')
         assert books == ['Гордость и предубеждение и зомби']
 
-    def test_get_books_with_specific_genre_finds_horror_books(self, collector_with_data):
-        books = collector_with_data.get_books_with_specific_genre('Ужасы')
-        assert books == ['Что делать, если ваш кот хочет вас убить']
+    def test_get_books_with_specific_genre_finds_horror_books(self, empty_collector):
+        empty_collector.books_genre = {
+            'Ужасная книга 1': 'Ужасы',
+            'Ужасная книга 2': 'Ужасы',
+            'Фантастическая книга': 'Фантастика',
+            'Книга без жанра': ''}
+        books = empty_collector.get_books_with_specific_genre('Ужасы')
+        assert 'Ужасная книга 1' in books
+        assert 'Ужасная книга 2' in books
+        assert len(books) == 2
+        assert 'Фантастическая книга' not in books
+        assert 'Книга без жанра' not in books
 
     def test_get_books_with_specific_genre_returns_empty_for_wrong_genre(self, collector_with_data):
         books = collector_with_data.get_books_with_specific_genre('Детективы')
@@ -129,11 +143,8 @@ class TestBooksCollector:
         assert books_genre == {}
 
     def test_get_books_genre_returns_reference_not_copy(self, collector_with_data):
-        # Тестируем, что метод возвращает ссылку, а не копию
         returned_books = collector_with_data.get_books_genre()
         returned_books['Новая книга'] = 'Фантастика'
-
-        # Оригинальный словарь должен измениться (так как возвращается ссылка)
         current_books = collector_with_data.get_books_genre()
         assert 'Новая книга' in current_books
         assert current_books['Новая книга'] == 'Фантастика'
@@ -148,12 +159,9 @@ class TestBooksCollector:
         favorites = empty_collector.get_list_of_favorites_books()
         assert favorites == []
 
-    def test_get_list_of_favorites_books_returns_reference_not_copy(self, collector_with_data):
-        # Тестируем, что метод возвращает ссылку, а не копию
-        returned_list = collector_with_data.get_list_of_favorites_books()
-        returned_list.append('Новая книга')
-
-        # Оригинальный список должен измениться (так как возвращается ссылка)
-        current_favorites = collector_with_data.get_list_of_favorites_books()
-        assert 'Новая книга' in current_favorites
-        assert len(current_favorites) == 3
+    def test_get_list_of_favorites_books_returns_correct_favorites(self, collector_with_data):
+        favorites_from_method = collector_with_data.get_list_of_favorites_books()
+        favorites_direct = collector_with_data.favorites
+        assert favorites_from_method == favorites_direct
+        assert favorites_from_method == ['Гордость и предубеждение и зомби', 'Ну погоди']
+        assert len(favorites_from_method) == 2
